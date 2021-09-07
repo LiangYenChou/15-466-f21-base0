@@ -206,16 +206,30 @@ void PongMode::update(float elapsed) {
 	paddle_vs_ball(right_paddle);
 
 	//court walls:
+	std::random_device rd;
+	std::mt19937 eng(rd());
+	std::uniform_int_distribution<int> x_distr(-court_radius.x, court_radius.x);
+	std::uniform_int_distribution<int> y_distr(-court_radius.y, court_radius.y);
+	
+	int x_p = x_distr(eng);
+	int y_p = y_distr(eng);
+	float x_pos = static_cast<float>(x_p);
+	float y_pos = static_cast<float>(y_p);
+	bool is_portal = false;
+
+
 	if (ball.y > court_radius.y - ball_radius.y) {
 		ball.y = court_radius.y - ball_radius.y;
 		if (ball_velocity.y > 0.0f) {
 			ball_velocity.y = -ball_velocity.y;
+			is_portal = true;
 		}
 	}
 	if (ball.y < -court_radius.y + ball_radius.y) {
 		ball.y = -court_radius.y + ball_radius.y;
 		if (ball_velocity.y < 0.0f) {
 			ball_velocity.y = -ball_velocity.y;
+			is_portal = true;
 		}
 	}
 
@@ -224,6 +238,7 @@ void PongMode::update(float elapsed) {
 		if (ball_velocity.x > 0.0f) {
 			ball_velocity.x = -ball_velocity.x;
 			left_score += 1;
+			is_portal = true;
 		}
 	}
 	if (ball.x < -court_radius.x + ball_radius.x) {
@@ -231,8 +246,15 @@ void PongMode::update(float elapsed) {
 		if (ball_velocity.x < 0.0f) {
 			ball_velocity.x = -ball_velocity.x;
 			right_score += 1;
+			is_portal = true;
 		}
 	}
+
+	if (is_portal){
+		ball = glm::vec2(x_pos, y_pos);
+		is_portal = false;
+	}
+	
 
 	//----- gradient trails -----
 
